@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <meta charset="utf-8"/>
+    <title>Simple markers</title>
+    <style>
+      html, body, #map-canvas {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script th:inline="javascript">
+    var marker;
+    var map;
+function initialize() {
+  var myLatlng = new google.maps.LatLng( [[${location.latitude}]] , [[${location.longitude}]]);
+  var mapOptions = {
+    zoom: 14,
+    center: myLatlng
+  }
+  map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+  marker = new google.maps.Marker({
+      position: myLatlng,
+      map: map,
+      title: 'test'
+  });
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+    </script>
+    
+    
+    
+    <script type="text/javascript">
+		(function updateMarker () {
+			  $.getJSON( "/location", function( data ) {
+			  var lat = data.latitude;
+			  var lon = data.longitude;
+
+			  var myLatLng = new google.maps.LatLng( lat , lon);
+
+			  marker.setMap(null);
+			  marker = new google.maps.Marker({
+			      position: myLatLng,
+			      map: map,
+			      title: 'test'
+			  });
+		  });
+		
+		  setTimeout(updateMarker, 5000);
+		})();
+		
+    
+
+	  </script>
+  </head>
+  <body>
+    <div id="map-canvas" style="width:600px;height:600px"></div>
+    <button onclick=""></button>
+  </body>
+</html>

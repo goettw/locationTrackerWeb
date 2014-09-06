@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/integration"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:int-amqp="http://www.springframework.org/schema/integration/amqp"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream-4.0.xsd
+		http://www.springframework.org/schema/integration/amqp http://www.springframework.org/schema/integration/amqp/spring-integration-amqp.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit-1.3.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd">
+	
+	<rabbit:connection-factory id="connectionFactory" host="192.168.1.201" username="admin" password="tmttlbexit"/>
+	<rabbit:template id="amqpTemplate" connection-factory="connectionFactory" />
+	<rabbit:admin connection-factory="connectionFactory" />
+	<rabbit:queue name="si.log.queue" />
+	
+	<rabbit:fanout-exchange name="logs">
+		<rabbit:bindings>
+			<rabbit:binding queue="si.log.queue" 	></rabbit:binding>
+		</rabbit:bindings>
+	</rabbit:fanout-exchange>
+
+	<channel id="fromRabbit"/>
+	
+	<int-amqp:inbound-channel-adapter message-converter="jsonMessageConverter" queue-names="si.log.queue" channel="fromRabbit"  connection-factory="connectionFactory"/>
+	
+	<beans:bean id="jsonMessageConverter" class="org.springframework.amqp.support.converter.Jackson2JsonMessageConverter" >
+			<beans:property name="classMapper">
+			<beans:bean class="org.springframework.amqp.support.converter.DefaultClassMapper">
+				<beans:property name="defaultType" value="locationTrackerWeb.Location" />
+			</beans:bean>
+		</beans:property>
+	</beans:bean>
+ 	
+	<service-activator ref="locationMessageReceiveService" input-channel="fromRabbit" method="receive"></service-activator>
+
+	</beans:beans>
